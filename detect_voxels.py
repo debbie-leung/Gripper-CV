@@ -11,11 +11,13 @@ import os
 
 # Helper function to find largest 4-sided square for checkboard
 def largest_4_sided_contour(processed, show_contours=False):
-    _, contours, _ = cv2.findContours(
-        processed, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv2.findContours(
+        processed, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) # check cv2.RETR_EXTERNAL
     contours = sorted(contours, key=cv2.contourArea, reverse=True)
     for cnt in contours[:min(3, len(contours))]:
-        if len(approx(cnt)) == 4:
+        peri = cv2.arcLength(cnt, True)
+        approx = cv2.approxPolyDP(cnt, 0.04 * peri, True)
+        if len(approx) == 4:
             return cnt
     return None
 
@@ -32,20 +34,8 @@ blurred = cv2.GaussianBlur(gray, (5, 5), 0)
 thresh = cv2.threshold(blurred, 100, 255, cv2.THRESH_BINARY)[1]
 
 # find contours in the thresholded image
-cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
-	cv2.CHAIN_APPROX_SIMPLE)
-cnts = imutils.grab_contours(cnts)
-for c in cnts:
-    peri = cv2.arcLength(c, True)
-    approx = cv2.approxPolyDP(c, 0.04 * peri, True)
-    if len(approx) == 4:
-        # (x, y, w, h) = cv2.boundingRect(approx)
-        # cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),2)
-        # rect = cv2.minAreaRect(approx)
-        # box = cv2.boxPoints(rect)
-        # box = np.int0(box)
-        # cv2.drawContours(img,[box],0,(0,0,255),2)
-        cv2.drawContours(img, [c], -1, (0, 255, 0), 2)
+cnts = largest_4_sided_contour(thresh)
+cv2.drawContours(img, [cnts], -1, (0, 255, 0), 2)
 cv2.imshow('binary', thresh)
 cv2.imshow("Image", img)
 cv2.waitKey()
