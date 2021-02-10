@@ -1,5 +1,3 @@
-# This computer vision script detects and quantifies the number of voxels picked up by the gripper using OpenCV
-
 # Import modules
 import cv2
 import numpy as np
@@ -11,71 +9,38 @@ import os
 from checkerboard import detect_checkerboard
 from helper_functions import *
 
-# Read in image
+# Detect voxels in simple checkerboard
 filename = sys.argv[1]
 img = cv2.imread(filename)
-img = imutils.resize(img, width=700)
-gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-thresh = cv2.threshold(blurred, 100, 255, cv2.THRESH_BINARY)[1]
+hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) 
+print(hsv)
 
-# Find contours of the gripper in the thresholded image
-cnts, x, y, w, h = largest_4_sided_contour(thresh)
-cv2.drawContours(img, [cnts], -1, (0, 255, 0), 2)
-#cv2.rectangle(img,(x,y),(x+w,y+h),(0,0,255),2)
-print(type(cnts))
-print(cnts.shape)
-print(len(cnts))
-print(cnts)
+# Threshold of magenta in HSV space 
+lower_mag = np.array([154,100,100]) 
+upper_mag = np.array([154,255,255]) 
 
-cv2.imshow('binary', thresh)
-cv2.imshow("Image", img)
-cv2.waitKey()
-print("finished contours")
+# preparing the mask to overlay 
+mask = cv2.inRange(hsv, lower_mag, upper_mag) 
+      
+# The black region in the mask has the value of 0, 
+# so when multiplied with original image removes all non-magenta regions 
+result = cv2.bitwise_and(img, img, mask = mask) 
+  
+cv2.imshow('frame', img) 
+cv2.imshow('mask', mask) 
+cv2.imshow('result', result) 
+      
+cv2.waitKey(0) 
+# cv2.destroyAllWindows() 
+# cap.release() 
 
-# Perform perspective correction
-# 1. crop image
-img = img[y:y+h,x:x+w]
-# 2. find corners
-cnts_ls = np.ndarray.tolist(np.squeeze(cnts))
-left_top = min(cnts_ls)
-print(left_top)
-check = cv2.circle(img, tuple(left_top), radius=10, color=(0, 0, 255), thickness=-1)
-right_bottom = max(cnts_ls)
-print(right_bottom)
-check = cv2.circle(check, tuple(right_bottom), radius=10, color=(0, 0, 255), thickness=-1)
-cv2.imshow("check", check)
-cv2.waitKey()
+# Create empty matrix
+print(img.shape)
+matrix = np.zeros((img.shape[0], img.shape[1]))
+print(matrix)
 
-# Crop checkerboard
-
-# cv2.imshow('Output', roi)
-# cv2.imwrite('Cropped.jpg', roi)
-
-# Apply threshold to detect checkerboard pattern
-roi_gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
-
-#roi_blurred = cv2.GaussianBlur(roi_gray, (5, 5), 0)
-roi_thresh = cv2.threshold(roi, 150, 255, cv2.THRESH_BINARY)[1]
-cv2.imshow('binary', roi_thresh)
-cv2.waitKey()
-
-nline = 31
-ncol = 31
-size = (ncol, nline) # size of checkerboard
-corners, score = detect_checkerboard(roi, size)
-print("corners")
-print(corners)
-print("score")
-print(score)
-
-# Threshold
-criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-ret, corners = cv2.findChessboardCorners(thresh, (nline, ncol), None)
-#img_inverted = np.array(256-thresh, dtype=uint8)
-print(ret, corners)
-
+# Get checkerboard corners
 # termination criteria
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
@@ -87,37 +52,24 @@ objp[:,:2] = np.mgrid[0:7,0:6].T.reshape(-1,2)
 objpoints = [] # 3d point in real world space
 imgpoints = [] # 2d points in image plane.
 
+images = glob.glob('*.jpg')
+
+gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+
+# Find the chess board corners
+ret, corners = cv2.findChessboardCorners(gray, (5,7),None)
+
 # If found, add object points, image points (after refining them)
 if ret == True:
-    print("checkerboard detected")
     objpoints.append(objp)
 
-    corners2 = cv2.cornerSubPix(gray, corners, (11,11), (-1,-1), criteria)
+    corners2 = cv2.cornerSubPix(gray,corners,(11,11),(-1,-1),criteria)
     imgpoints.append(corners2)
+    print(corners2)
 
     # Draw and display the corners
-    img = cv2.drawChessboardCorners(img, (nline, ncol), corners2, ret)
+    img = cv2.drawChessboardCorners(img, (5,7), corners2,ret)
     cv2.imshow('img',img)
     cv2.waitKey()
 
-""" 
-# Convert image to grayscale and median blur to smooth image
-blur = cv2.medianBlur(gray, 5)
-
-# Sharpen image to enhance edges
-sharpen_kernel = np.array([[-1,-1,-1], [-1,9,-1], [-1,-1,-1]])
-sharpen = cv2.filter2D(blur, -1, sharpen_kernel)
-
-# Threshold
-thresh = cv2.threshold(sharpen,100,255, cv2.THRESH_BINARY_INV)[1]
-kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
-
-# Perform morphological transformations
-close = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel, iterations=2)
-
-# Find contours and filter using minimum/maximum threshold area
-cnts = cv2.findContours(close, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-cnts = cnts[0] if len(cnts) == 2 else cnts[1]
-"""
-
-# Detect voxels
+# cv2.destroyAllWindows()
