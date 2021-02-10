@@ -8,23 +8,10 @@ import imutils
 import glob
 import sys
 import os
+from checkerboard import detect_checkerboard
+from helper_functions import *
 
-# Helper function to find largest 4-sided square for checkboard
-def largest_4_sided_contour(processed, show_contours=False):
-    contours, _ = cv2.findContours(
-        processed, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) # check cv2.RETR_EXTERNAL
-    contours = sorted(contours, key=cv2.contourArea, reverse=True)
-    for cnt in contours[:min(3, len(contours))]:
-        peri = cv2.arcLength(cnt, True)
-        approx = cv2.approxPolyDP(cnt, 0.04 * peri, True)
-        if len(approx) == 4:
-            return cnt
-    return None
-
-# Detect checkboard
-nline = 31
-ncol = 31
-
+# Read in image
 filename = sys.argv[1]
 img = cv2.imread(filename)
 img = imutils.resize(img, width=700)
@@ -33,24 +20,57 @@ gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 blurred = cv2.GaussianBlur(gray, (5, 5), 0)
 thresh = cv2.threshold(blurred, 100, 255, cv2.THRESH_BINARY)[1]
 
-# find contours in the thresholded image
-cnts = largest_4_sided_contour(thresh)
+# Find contours of the gripper in the thresholded image
+cnts, x, y, w, h = largest_4_sided_contour(thresh)
 cv2.drawContours(img, [cnts], -1, (0, 255, 0), 2)
+#cv2.rectangle(img,(x,y),(x+w,y+h),(0,0,255),2)
+print(type(cnts))
+print(cnts.shape)
+print(len(cnts))
+print(cnts)
+
 cv2.imshow('binary', thresh)
 cv2.imshow("Image", img)
 cv2.waitKey()
-
-contours, hierarchy = cv2.findContours(thresh, 1, 2)
-x,y,w,h = cv2.boundingRect(contours[0])
-rect = cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),2)
-print(rect)
-box = cv2.boxPoints(rect)
-box = np.int0(box)
-cv.drawContours(img,[box],0,(0,0,255),2)
-
-# Threshold
 print("finished contours")
 
+# Perform perspective correction
+# 1. crop image
+img = img[y:y+h,x:x+w]
+# 2. find corners
+cnts_ls = np.ndarray.tolist(np.squeeze(cnts))
+left_top = min(cnts_ls)
+print(left_top)
+check = cv2.circle(img, tuple(left_top), radius=10, color=(0, 0, 255), thickness=-1)
+right_bottom = max(cnts_ls)
+print(right_bottom)
+check = cv2.circle(check, tuple(right_bottom), radius=10, color=(0, 0, 255), thickness=-1)
+cv2.imshow("check", check)
+cv2.waitKey()
+
+# Crop checkerboard
+
+# cv2.imshow('Output', roi)
+# cv2.imwrite('Cropped.jpg', roi)
+
+# Apply threshold to detect checkerboard pattern
+roi_gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+
+#roi_blurred = cv2.GaussianBlur(roi_gray, (5, 5), 0)
+roi_thresh = cv2.threshold(roi, 150, 255, cv2.THRESH_BINARY)[1]
+cv2.imshow('binary', roi_thresh)
+cv2.waitKey()
+
+nline = 31
+ncol = 31
+size = (ncol, nline) # size of checkerboard
+corners, score = detect_checkerboard(roi, size)
+print("corners")
+print(corners)
+print("score")
+print(score)
+
+# Threshold
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 ret, corners = cv2.findChessboardCorners(thresh, (nline, ncol), None)
 #img_inverted = np.array(256-thresh, dtype=uint8)
