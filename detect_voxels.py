@@ -17,17 +17,20 @@ matrix = np.zeros((check_x, check_y))
 filename = sys.argv[1]
 img = cv2.imread(filename)
 img = imutils.resize(img, width=700)
-cv2.imwrite("enlarged.jpg", img)
+# cv2.imwrite("enlarged.jpg", img)
 
 # img = cv2.GaussianBlur(img, (5, 5), 0)
 # img = cv2.addWeighted(img, 1.5, img, -0.5, 0, img)
+blur = cv2.GaussianBlur(img, (5, 5), 0)
+edges = cv2.Canny(blur,100,200)
+cv2.imshow('edge', edges)
 
 hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) 
 #print(hsv)
 
 # Threshold of magenta in HSV space 
-lower_mag = np.array([144,100,100]) 
-upper_mag = np.array([164,255,255])
+lower_mag = np.array([140,100,20]) # H = 130
+upper_mag = np.array([170,255,255]) # H = 170
 
 # preparing the mask to overlay 
 mask = cv2.inRange(hsv, lower_mag, upper_mag) 
@@ -40,11 +43,35 @@ print(result.shape)
   
 cv2.imshow('frame', img) 
 cv2.imshow('mask', mask) 
-cv2.imshow('result', result)       
-# cv2.waitKey(0) 
-# cv2.destroyAllWindows() 
-# cap.release() 
+cv2.imshow('result', result)     
 
+result_blur = cv2.GaussianBlur(result, (5, 5), 0)
+edges = cv2.Canny(result_blur,100,200)
+cv2.imshow('edge', edges)
+
+# Feed in filtered image to find centroid
+# gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+ret,thresh = cv2.threshold(mask,127,255,0)
+cv2.imshow('thresh', thresh)
+
+# find contours in the binary image
+# im2, contours = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+# for c in contours:
+#     cv2.drawContours(img, [c], -1, (255, 0, 0), 2)
+#     # calculate moments for each contour
+#     M = cv2.moments(c)
+
+#     # calculate x,y coordinate of center
+#     cX = int(M["m10"] / M["m00"])
+#     cY = int(M["m01"] / M["m00"])
+#     cv2.circle(img, (cX, cY), 5, (255, 255, 255), -1)
+#     cv2.putText(img, "centroid", (cX - 25, cY - 25),cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+
+#     # display the image
+#     cv2.imshow("Image", img)
+#     cv2.waitKey(0)
+
+# Hardcode finding centroid
 voxelx_center = int((img.shape[0] / check_x) / 2)
 voxely_center = int((img.shape[1] / check_y) / 2)
 voxelx_size = int((img.shape[0] / check_x))
