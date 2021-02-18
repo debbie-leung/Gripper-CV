@@ -19,12 +19,6 @@ img = cv2.imread(filename)
 img = imutils.resize(img, width=700)
 # cv2.imwrite("enlarged.jpg", img)
 
-# img = cv2.GaussianBlur(img, (5, 5), 0)
-# img = cv2.addWeighted(img, 1.5, img, -0.5, 0, img)
-blur = cv2.GaussianBlur(img, (5, 5), 0)
-edges = cv2.Canny(blur,100,200)
-cv2.imshow('edge', edges)
-
 hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) 
 #print(hsv)
 
@@ -45,17 +39,27 @@ cv2.imshow('frame', img)
 cv2.imshow('mask', mask) 
 cv2.imshow('result', result)     
 
-result_blur = cv2.GaussianBlur(result, (5, 5), 0)
-edges = cv2.Canny(result_blur,100,200)
-cv2.imshow('edge', edges)
+# 1. Blue then edge detection
+blur = cv2.GaussianBlur(result, (5, 5), cv2.BORDER_DEFAULT)
 
+median = cv.medianBlur(img, 3)
+bilateral = cv2.bilateralFilter(img, 5, 10, 5) # retain edges
+canny = cv2.Canny(blur, 125, 175)
+cv2.imshow('Canny Edges', canny)
+
+# 2. Threshold to binarize image
 # Feed in filtered image to find centroid
-# gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 ret,thresh = cv2.threshold(mask,127,255,0)
 cv2.imshow('thresh', thresh)
 
 # find contours in the binary image
-# im2, contours = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+contours, hierarchy = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+blank = np.zeros(img.shape[:2], dtype='uint8')
+cv2.drawContours(blank, contours, -1, (255,0,0), 1)
+cv2.imshow('Contours Drawn', blank)
+print(len(contours))
+
 # for c in contours:
 #     cv2.drawContours(img, [c], -1, (255, 0, 0), 2)
 #     # calculate moments for each contour

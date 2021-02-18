@@ -2,6 +2,15 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 
+# Resize images
+def rescaleFrame(frame, scale=0.75):
+    width = int(frame.shape[1] * scale)
+    height = int(frame.shape[0] * scale)
+
+    dimensions = (width, height)
+
+    return cv.resize(frame, dimensions, interpolation=cv.INTER_AREA)
+
 # Helper function to find largest 4-sided square for checkboard
 def largest_4_sided_contour(processed, show_contours=False):
     contours, _ = cv2.findContours(
