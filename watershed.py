@@ -5,8 +5,9 @@ import matplotlib.image as mpimg
 import imutils
 
 img = cv.imread('cropped.jpg')
-# img = imutils.resize(img, width=400)
+img = imutils.resize(img, width=400)
 img2 = img.copy()
+img3 = img.copy()
 
 # gray = cv.cvtColor(img,cv.COLOR_BGR2GRAY)
 # ret, thresh = cv.threshold(gray,0,255,cv.THRESH_BINARY_INV+cv.THRESH_OTSU)
@@ -58,30 +59,49 @@ markers[unknown==255] = 0
 markers = cv.watershed(img,markers)
 img[markers == -1] = [255,0,0]
 
-img_plt = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-plt.subplot(1, 3, 3)
-plt.imshow(img_plt)
-plt.show()
+# img_plt = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+# plt.subplot(1, 3, 3)
+# plt.imshow(img_plt)
+# plt.show()
+img = imutils.resize(img, width=400)
+cv.imshow('img1', img)
 
-# Find centroids of markers
+# Find centroids of markers (https://learnopencv.com/find-center-of-blob-centroid-using-opencv-cpp-python/)
 # img2 = img.copy()
 markers1 = markers.astype(np.uint8)
 ret, m2 = cv.threshold(markers1, 0, 255, cv.THRESH_BINARY|cv.THRESH_OTSU)
 contours, hierarchy = cv.findContours(m2, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
-    
-for c in contours:
+
+centroids = []
+idx = 0
+
+for i, c in enumerate(contours):
 
     # calculate moments for each contour
     M = cv.moments(c)
 
     # calculate x,y coordinate of center
-    cX = int(M["m10"] / M["m00"])
+    cX = int(M["m10"] / M["m00"]) # M["m00"] is the area of the blob
     cY = int(M["m01"] / M["m00"])
-    cv.circle(img2, (cX, cY), 1, (255, 255, 255), -1)
-    # cv.drawContours(img2, c, -1, (0, 255, 0), 1)
+    # if 120 < M["m00"] < 180:
+    if 1500 < M["m00"] < 3000:
+        centroids.append((cX, cY))
+        cv.circle(img2, (cX, cY), 1, (255, 255, 255), -1)
+        text = str((cX, cY))
+        cv.putText(img3, text, (cX, cY), cv.FONT_HERSHEY_SIMPLEX, 0.3, (255, 0, 0), 1, cv.LINE_AA)
+        cv.drawContours(img3, c, -1, (0, 255, 0), 1)
 
+print(len(centroids))
+centroids = set(centroids)
+print("length")
+print(len(centroids))
+np.savetxt("centroids.txt", np.array(sorted(list(centroids), key=lambda element: (element[1], element[0]))), fmt='%d')
+# print("numpy")
+# centroids_reshaped = np.array(centroids).reshape((8,8))
+# print(np.array(centroids))
+# img2 = imutils.resize(img2, width=400)
 # cv.imshow('markers1', markers1)
-cv.imshow('contours', img2)
-cv.imwrite('centroid_post.png', img2)
-cv.waitKey(0)
-cv.destroyAllWindows()
+cv.imshow('img2', img2)
+# img3 = imutils.resize(img3, width=400)
+cv.imshow('img3', img3)
+cv.waitKey()
