@@ -39,10 +39,10 @@ cv2.imshow('frame', img)
 cv2.imshow('mask', mask) 
 cv2.imshow('result', result)     
 
-# 1. Blue then edge detection
+# 1. Blur then edge detection
 blur = cv2.GaussianBlur(result, (5, 5), cv2.BORDER_DEFAULT)
 
-median = cv.medianBlur(img, 3)
+median = cv2.medianBlur(img, 3)
 bilateral = cv2.bilateralFilter(img, 5, 10, 5) # retain edges
 canny = cv2.Canny(blur, 125, 175)
 cv2.imshow('Canny Edges', canny)
