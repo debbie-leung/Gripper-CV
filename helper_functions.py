@@ -75,7 +75,6 @@ def watershed(img, mask): # add parameters for tweaking
     plt.subplot(1, 3, 3)
     plt.imshow(img_plt)
     plt.show()
-    cv.imshow('img1', img)
 
     return markers
 
