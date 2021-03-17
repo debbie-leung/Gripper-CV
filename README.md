@@ -22,3 +22,12 @@ New Directions:
 2. Get error array by
 - calculating Euclidean distance from centroids
 - calculating theta offset from orientation/minimum inertia
+3. Watershed algorithm not perfectly working/robust (check area and contour, tweak parameters)
+
+References:
+1. Orientation/Image moments
+- https://towardsdatascience.com/computer-vision-for-beginners-part-4-64a8d9856208
+- https://namkeenman.wordpress.com/2015/12/18/open-cv-determine-angle-of-rotatedrect-minarearect/
+- https://theailearner.com/tag/cv2-minarearect/
+- https://stackoverflow.com/questions/15956124/minarearect-angles-unsure-about-the-angle-returned
+- https://docs.opencv.org/2.4/modules/imgproc/doc/structural_analysis_and_shape_descriptors.html
