@@ -1,6 +1,7 @@
 import cv2 as cv
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
 # Resize images
 def rescaleFrame(frame, scale=0.75):
@@ -32,7 +33,7 @@ def unwarp(img, src, dst, testing):
     # use cv2.warpPerspective() to warp your image to a top-down view
     warped = cv.warpPerspective(img, M, (w, h), flags=cv2.INTER_LINEAR)
 
-def watershed(img, mask): # add parameters for tweaking
+def watershed(img, mask, filename): # add parameters for tweaking
     # noise removal
     kernel = np.ones((3,3),np.uint8)
     opening = cv.morphologyEx(mask,cv.MORPH_OPEN,kernel, iterations = 5) # default iterations = 5
@@ -47,13 +48,14 @@ def watershed(img, mask): # add parameters for tweaking
 
     # Finding sure foreground area
     dist_transform = cv.distanceTransform(opening,cv.DIST_L2,5)
-    ret, sure_fg = cv.threshold(dist_transform,0.4*dist_transform.max(),255,0) # default parameter = 0.7
+    ret, sure_fg = cv.threshold(dist_transform,0.4*dist_transform.max(),255,0) # default parameter = 0.7 (used 0.4)
     # cv.imshow('distance transform', dist_transform)
     # cv.imshow('sure_fg', sure_fg)
 
     sure_fg_plt = cv.cvtColor(sure_fg, cv.COLOR_BGR2RGB)
     plt.subplot(1, 3, 2)
     plt.imshow(sure_fg_plt)
+    cv.imwrite(os.path.splitext(filename)[0] + "_foreground.jpg", sure_fg)
 
     # Finding unknown region
     sure_fg = np.uint8(sure_fg)
