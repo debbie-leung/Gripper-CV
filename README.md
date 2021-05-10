@@ -31,3 +31,6 @@ References:
 - https://theailearner.com/tag/cv2-minarearect/
 - https://stackoverflow.com/questions/15956124/minarearect-angles-unsure-about-the-angle-returned
 - https://docs.opencv.org/2.4/modules/imgproc/doc/structural_analysis_and_shape_descriptors.html
+2. Finding corresponding HSV values
+- https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_colorspaces/py_colorspaces.html
+- https://stackoverflow.com/questions/36817133/identifying-the-range-of-a-color-in-hsv-using-opencv/51686953
