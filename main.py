@@ -10,13 +10,13 @@ import imutils
 import helper_functions as f
 
 # Parameters to be changed
-check_x = 32 # this is in fact y (vertical column) -- needs to get fixed with image.shape
-check_y = 32
+check_x = 8 # this is in fact y (vertical column) -- needs to get fixed with image.shape
+check_y = 8
 # img.shape[0] is the y length (height)
 # img.shape[1] is the x-length (width)
 # Need to check this value!
-upper_voxel_size = 300 # 180 low resolution (3000 for 8x8 array, 120 for 32x32 array)
-lower_voxel_size = 80 # 120 low resolution (1500 for 8x8 array, 170 for 32x32 array)
+upper_voxel_size = 3000 # 180 low resolution (3000 for 8x8 array, 300 for 32x32 array)
+lower_voxel_size = 1500 # 120 low resolution (1500 for 8x8 array, 80 for 32x32 array)
 
 # Read image
 filename = sys.argv[1] # file path = "photos/img_name.jpeg"
@@ -26,8 +26,11 @@ img2 = img.copy()
 img3 = img.copy()
 img4 = img.copy()
 
+# Convert image to binary
 # gray = cv.cvtColor(img,cv.COLOR_BGR2GRAY)
 # ret, thresh = cv.threshold(gray,0,255,cv.THRESH_BINARY_INV+cv.THRESH_OTSU)
+# _, m2 = cv.threshold(gray, 50, 255, cv.THRESH_BINARY | cv.THRESH_OTSU)
+
 hsv = cv.cvtColor(img, cv.COLOR_BGR2HSV) 
 
 # Threshold of magenta in HSV space 
@@ -35,25 +38,14 @@ lower_mag = np.array([140,100,100]) # H = 130 (HSV = 140,100,20)
 upper_mag = np.array([170,255,255]) # H = 170
 lower_blue = np.array([100,100,100]) #RGB = 0, 128, 255 (HSV = 110,50,50)
 upper_blue = np.array([130,255,255]) # 130,255,255
-lower = lower_blue
-upper = upper_blue
+lower = lower_mag
+upper = upper_mag
 
 # Prepare the mask to overlay 
 mask = cv.inRange(hsv, lower, upper) 
-cv.imshow("mask", mask)
-
 markers = f.watershed(img, mask, filename)
-
 centroids, output, filled_contours = f.centroid_finder(img, markers)
 markers1 = markers.astype(np.uint8)
-
-# gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
- 
-# Convert image to binary
-# _, m2 = cv.threshold(gray, 50, 255, cv.THRESH_BINARY | cv.THRESH_OTSU)
- 
-# cv.imshow("BW", m2)
-# cv.waitKey()
 ret, m2 = cv.threshold(markers1, 0, 255, cv.THRESH_BINARY|cv.THRESH_OTSU)
 contours, hierarchy = cv.findContours(m2, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
 
@@ -98,20 +90,21 @@ for c in contours:
     cX = int(M["m10"] / M["m00"]) # M["m00"] is the area of the blob
     cY = int(M["m01"] / M["m00"])
 
-    if lower_voxel_size < M["m00"] < upper_voxel_size: 
+    print(M["m00"])
+    # if lower_voxel_size < M["m00"] < upper_voxel_size: 
     # print(M["m00"])
-        centroids.append((cX, cY))
-        cv.circle(img2, (cX, cY), 1, (255, 255, 255), -1)
-        text = str((cX, cY))
-        # cv.putText(img2, text, (cX, cY), cv.FONT_HERSHEY_SIMPLEX, 0.3, (255, 0, 0), 1, cv.LINE_AA)
-        cv.drawContours(img2, c, -1, (0,255,0), 1)
-        cv.drawContours(filled_contours, [c], -1, (255, 255, 255), -1)
-    
-        # Boolean array: find where the centroid should belong to
-        x_idx = int(cX//pixelx_per_voxel)
-        y_idx = int(cY//pixely_per_voxel)
-        grid[y_idx, x_idx] = 1
-        centroid_grid[y_idx, x_idx] = (cX, cY)
+    centroids.append((cX, cY))
+    cv.circle(img2, (cX, cY), 1, (255, 255, 255), -1)
+    text = str((cX, cY))
+    # cv.putText(img2, text, (cX, cY), cv.FONT_HERSHEY_SIMPLEX, 0.3, (255, 0, 0), 1, cv.LINE_AA)
+    cv.drawContours(img2, c, -1, (0,255,0), 1)
+    cv.drawContours(filled_contours, [c], -1, (255, 255, 255), -1)
+
+    # Boolean array: find where the centroid should belong to
+    x_idx = int(cX//pixelx_per_voxel)
+    y_idx = int(cY//pixely_per_voxel)
+    grid[y_idx, x_idx] = 1
+    centroid_grid[y_idx, x_idx] = (cX, cY)
 
         # translation error array: TALK TO JONI about having perfectly bordered voxels
         # xt = 1.5*pixelx_per_mm + x_idx*3*pixelx_per_mm # thereotical centroid x-coord
@@ -122,15 +115,15 @@ for c in contours:
 
         # rotation error array (minAreaRect)
         # (x,y),(MA,ma),angle = cv.fitEllipse(c)
-        rect = cv.minAreaRect(c)
-        # print(rect)
-        box = cv.boxPoints(rect) 
-        box = np.int0(box)
-        cv.drawContours(img4,[box],0,(0,0,255),1)
-        angle = rect[2]
-        if angle > 45:
-            angle = angle - 90
-        ori[y_idx, x_idx] = angle
+    rect = cv.minAreaRect(c)
+    # print(rect)
+    box = cv.boxPoints(rect) 
+    box = np.int0(box)
+    cv.drawContours(img4,[box],0,(0,0,255),1)
+    angle = rect[2]
+    if angle > 45:
+        angle = angle - 90
+    ori[y_idx, x_idx] = angle
     
         # using moments (use minimum inertia)
         #https://en.wikipedia.org/wiki/Image_moment#Raw_moments
@@ -151,12 +144,12 @@ for c in contours:
         # ori[y_idx, x_idx] = angle
 
         # draw angle line
-        length = 5
-        P2x = int(cX + length * math.cos(math.radians(angle)))
-        P2y = int(cY + length * math.sin(math.radians(angle)))
-        cv.line(img2,(cX, cY),(P2x,P2y),(255,255,255),1)
+    length = 5
+    P2x = int(cX + length * math.cos(math.radians(angle)))
+    P2y = int(cY + length * math.sin(math.radians(angle)))
+    cv.line(img2,(cX, cY),(P2x,P2y),(255,255,255),1)
 
-        cv.putText(img2, str(round(angle)), (cX, cY), cv.FONT_HERSHEY_SIMPLEX, 0.1, (0, 0 ,0), 1, cv.LINE_AA)
+    cv.putText(img2, str(round(angle)), (cX, cY), cv.FONT_HERSHEY_SIMPLEX, 0.1, (0, 0 ,0), 1, cv.LINE_AA)
 
 print(grid)
 print(dist)
