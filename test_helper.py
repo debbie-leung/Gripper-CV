@@ -1,3 +1,5 @@
+# This contain helper functions that accompany the testing script 
+
 import cv2 as cv
 import matplotlib.pyplot as plt
 import numpy as np
@@ -13,7 +15,7 @@ def rescaleFrame(frame, scale=0.75):
 
     return cv.resize(frame, dimensions, interpolation=cv.INTER_AREA)
 
-# Helper function to find largest 4-sided square for checkboard
+# Find largest 4-sided square for checkboard
 def largest_4_sided_contour(processed, show_contours=False):
     contours, _ = cv.findContours(
         processed, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE) # check cv.RETR_EXTERNAL
@@ -72,6 +74,8 @@ def watershed(img, mask, filename): # add parameters for tweaking
     markers[unknown==255] = 0
 
     markers = cv.watershed(img,markers)
+    markers = markers.astype(np.uint8)
+
     img[markers == -1] = [255,0,0]
 
     img_plt = cv.cvtColor(img, cv.COLOR_BGR2RGB)
@@ -86,7 +90,6 @@ def centroid_finder(img, markers):
 
     # Output: annotated image with centroids, image with contour fills
 
-    markers1 = markers.astype(np.uint8)
     ret, m2 = cv.threshold(markers1, 0, 255, cv.THRESH_BINARY|cv.THRESH_OTSU)
     contours, hierarchy = cv.findContours(m2, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
 
@@ -116,6 +119,16 @@ def centroid_finder(img, markers):
         
     return centroids, img2, filled_contours 
 
+def line_drawing(img, num_x, num_y):
+  # draw lines across image
+  voxely_size = int((img.shape[0] / num_y))
+  
+  for i in range(1, num_y):
+      cv.line(img, (0, i*voxely_size), (img.shape[1],i*voxely_size), (255,255,255), 2)
+
+  voxelx_size = int((img.shape[1] / num_x))
+  for j in range(1, num_x):
+      cv.line(img, (j*voxelx_size, 0), (j*voxelx_size, img.shape[0]), (255,255,255), 2)
 
 def raw_moment(data, i_order, j_order):
     nrows, ncols = data.shape
