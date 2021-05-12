@@ -26,15 +26,20 @@ cnts, x, y, w, h, contours_poly, box = f.largest_4_sided_contour(thresh)
 cv.drawContours(img2, [cnts], -1, (0,255,0), 2)
 
 # Change DST list points to SQUARE!!! (take the longer edge)
-dst = np.float32([[x,y], [x+w,y], [x,y+h], [x+w,y+h]])
+if w > h:
+    dst = np.float32([[x,y], [x+w,y], [x,y+w], [x+w,y+w]])
+    cv.rectangle(img2,(x,y),(x+w,y+w),(255,0,0),2)
+else:
+    dst = np.float32([[x,y], [x+h,y], [x,y+h], [x+h,y+h]])
+    cv.rectangle(img2,(x,y),(x+h,y+h),(255,0,0),2)
 print(dst)
+
 for i in range(4):
     cv.circle(img2, tuple(contours_poly[i][0]), 10, (0, 0, 255), -1)
     text = str(tuple(contours_poly[i][0]))
     cv.putText(img2, text, tuple(contours_poly[i][0]), cv.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 1, cv.LINE_AA)
     cv.putText(img2, str(tuple(dst[i])), tuple(dst[i]), cv.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 1, cv.LINE_AA)
 
-cv.rectangle(img2,(x,y),(x+w,y+h),(255,0,0),2)
 # cv.drawContours(img,[rect],0,(0,0,0),2)
 # cv.drawContours(img,[box],0,(255,255,255),2)
  
@@ -52,7 +57,13 @@ print(img.shape)
 
 h, w = img.shape[:2]
 M = cv.getPerspectiveTransform(src, dst)
-warped = cv.warpPerspective(img, M, (w, h), flags=cv.INTER_LINEAR)
+if w > h:
+    warped = cv.warpPerspective(img, M, (w, w), flags=cv.INTER_LINEAR)
+    cv.rectangle(warped,(x,y),(x+w,y+w),(255,0,0),2)
+    cv.rectangle(warped,(x,y),(x+h,y+h),(0,255,0),2)
+else:
+    warped = cv.warpPerspective(img, M, (h, h), flags=cv.INTER_LINEAR)
+    cv.rectangle(warped,(x,y),(x+h,y+h),(0,255,0),2)
 cv.imshow("warped", warped)
 
 # cnts = cv.findContours(thresh.copy(), cv.RETR_EXTERNAL,

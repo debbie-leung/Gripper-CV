@@ -6,6 +6,10 @@ To dos:
 - detect voxels
 - translate into numpy array
 - do perspective correction
+- correct for voxel shading
+- draw lines across image
+- fix orientation offset
+- expand code to take multiple images and calculate array voxel average accuracy
 
 Steps:
 1. Detect and outline gripper square
@@ -38,3 +42,7 @@ References:
 - https://stackoverflow.com/questions/22656698/perspective-correction-in-opencv-using-python 
 - https://stackoverflow.com/questions/22519545/automatic-perspective-correction-opencv?noredirect=1&lq=1 
 - https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_geometric_transformations/py_geometric_transformations.html
+4. Camera lens distortion
+- https://learnopencv.com/camera-calibration-using-opencv/
+- https://learnopencv.com/understanding-lens-distortion/ 
+- https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_calib3d/py_calibration/py_calibration.html
