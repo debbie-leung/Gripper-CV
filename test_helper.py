@@ -15,7 +15,7 @@ def rescaleFrame(frame, scale=0.75):
 
     return cv.resize(frame, dimensions, interpolation=cv.INTER_AREA)
 
-# Find largest 4-sided square for checkboard
+# Find largest 4-sided square for gripper
 def largest_4_sided_contour(processed, show_contours=False):
     contours, _ = cv.findContours(
         processed, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE) # check cv.RETR_EXTERNAL
@@ -23,10 +23,13 @@ def largest_4_sided_contour(processed, show_contours=False):
     font = cv.FONT_HERSHEY_COMPLEX 
     for cnt in contours[:min(3, len(contours))]:
         peri = cv.arcLength(cnt, True)
-        approx = cv.approxPolyDP(cnt, 0.04 * peri, True)
-        if len(approx) == 4:
+        contours_poly = cv.approxPolyDP(cnt, 0.04 * peri, True)
+        if len(contours_poly) == 4:
             x,y,w,h = cv.boundingRect(cnt)
-            return cnt, x, y, w, h
+            rect = cv.minAreaRect(cnt)
+            box = cv.boxPoints(rect)
+            box = np.int0(box)
+            return cnt, x, y, w, h, contours_poly, box
     return None
     
 def unwarp(img, src, dst, testing):

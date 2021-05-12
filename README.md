@@ -36,3 +36,5 @@ References:
 - https://stackoverflow.com/questions/36817133/identifying-the-range-of-a-color-in-hsv-using-opencv/51686953
 3. Perspective correction
 - https://stackoverflow.com/questions/22656698/perspective-correction-in-opencv-using-python 
+- https://stackoverflow.com/questions/22519545/automatic-perspective-correction-opencv?noredirect=1&lq=1 
+- https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_geometric_transformations/py_geometric_transformations.html
