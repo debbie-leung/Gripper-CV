@@ -16,16 +16,10 @@ import test_helper as f
 2. Refine the camera matrix to control the percentage of unwanted pixels in the undistorted image.
 3. Using the refined camera matrix to undistort the image.
 """
-# Read in image
-filename = sys.argv[1]
-img = cv.imread(filename)
-img = imutils.resize(img, width=700)
-img2 = img.copy()
-gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 
 # 1. Camera calibration to get camera matrix
 # Defining the dimensions of checkerboard
-CHECKERBOARD = (6,9)
+CHECKERBOARD = (7,7) # (6,9)
 criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
 # Creating vector to store vectors of 3D points for each checkerboard image
@@ -42,6 +36,7 @@ prev_img_shape = None
 images = glob.glob('./Checkerboard/*.jpg')
 for fname in images:
     img = cv.imread(fname)
+    img = imutils.resize(img, width=500)
     gray = cv.cvtColor(img,cv.COLOR_BGR2GRAY)
     # Find the chess board corners
     # If desired number of corners are found in the image then ret = true
@@ -87,6 +82,11 @@ print("tvecs : \n")
 print(tvecs)
 
 # 2. Refine camera matrix
+img = cv.imread(images[0])
+# img = cv.imread('./Checkerboard/IMG_2792.jpg')
+img = imutils.resize(img, width=500)
+cv.imshow("image",img)
+cv.imwrite("image.jpg", img)
 
 newcameramtx, roi = cv.getOptimalNewCameraMatrix(mtx, dist, (w,h), 1, (w,h))
 
@@ -95,10 +95,14 @@ newcameramtx, roi = cv.getOptimalNewCameraMatrix(mtx, dist, (w,h), 1, (w,h))
 # Method 1 to undistort the image
 dst = cv.undistort(img, mtx, dist, None, newcameramtx)
 
+cv.imshow("undistorted 1",dst)
+cv.imwrite("undistorted1.jpg", dst)
+
 # Method 2 to undistort the image
 mapx,mapy=cv.initUndistortRectifyMap(mtx,dist,None,newcameramtx,(w,h),5)
 dst = cv.remap(img,mapx,mapy,cv.INTER_LINEAR)
 
 # Displaying the undistorted image
-cv.imshow("undistorted image",dst)
+cv.imshow("undistorted 2",dst)
+cv.imwrite("undistorted2.jpg", dst)
 cv.waitKey(0)
