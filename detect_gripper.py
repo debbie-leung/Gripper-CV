@@ -25,7 +25,7 @@ thresh = cv.threshold(blurred, 100, 255, cv.THRESH_BINARY)[1]
 cnts, x, y, w, h, contours_poly, box = f.largest_4_sided_contour(thresh)
 cv.drawContours(img2, [cnts], -1, (0,255,0), 2)
 
-# Change DST list points to SQUARE!!! (take the longer edge)
+# Change DST list points to SQUARE (take the longer edge)
 if w > h:
     dst = np.float32([[x,y], [x+w,y], [x,y+w], [x+w,y+w]])
     cv.rectangle(img2,(x,y),(x+w,y+w),(255,0,0),2)

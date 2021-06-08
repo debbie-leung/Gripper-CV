@@ -148,33 +148,6 @@ print(grid)
 # draw lines across image
 f.line_drawing(img3, num_x, num_y)
 
-# hough transform
-# gray = cv.cvtColor(img,cv.COLOR_BGR2GRAY)
-# edges = cv.Canny(mask,50,150,apertureSize = 3)
-# cv.imshow("canny", edges)
-# minLineLength = 10
-# maxLineGap = 5
-# lines = cv.HoughLinesP(edges,1,np.pi/180,10,minLineLength,maxLineGap)
-# for i in range(len(lines)):
-#     for x1,y1,x2,y2 in lines[i]:
-#         cv.line(img3,(x1,y1),(x2,y2),(0,0,255),2)
-
-# lines = cv.HoughLines(edges,0.1,np.pi/360,50)
-# print(len(lines))
-# for i in range(len(lines)):
-#     for rho,theta in lines[i]:
-#         a = np.cos(theta)
-#         b = np.sin(theta)
-#         x0 = a*rho
-#         y0 = b*rho
-#         x1 = int(x0 + 50*(-b))
-#         y1 = int(y0 + 50*(a))
-#         x2 = int(x0 - 50*(-b))
-#         y2 = int(y0 - 50*(a))
-    # cv.line(img3,(x1,y1),(x2,y2),(0,0,255),1)
-
-cv.imshow("grid", img3)
-
 # print number of voxels
 # unique, counts = np.unique(grid, return_counts=True)
 # print(dict(zip(unique, counts)))
@@ -188,6 +161,8 @@ cv.imshow("grid", img3)
 # Save error arrays
 # np.savetxt(os.path.splitext(filename)[0] + "dist.csv", dist, fmt='%f', delimiter=',')
 # np.savetxt(os.path.splitext(filename)[0] + "ori.csv", ori, fmt='%f', delimiter=',')
+
+cv.imshow("grid", img3)
 
 cv.imshow("centroids", img2)
 cv.imshow("edges", img)

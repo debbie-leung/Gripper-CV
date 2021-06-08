@@ -46,3 +46,8 @@ References:
 - https://learnopencv.com/camera-calibration-using-opencv/
 - https://learnopencv.com/understanding-lens-distortion/ 
 - https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_calib3d/py_calibration/py_calibration.html
+
+Hough Line Transform Tips:
+- grow and shrink the blobs with thresholding
+- use math.isclose() for filtering vertical and horizontal lines
+- how many lines to plot and how far they are spaced apart
