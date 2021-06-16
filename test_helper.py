@@ -4,7 +4,7 @@ import cv2 as cv
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-from math import atan2, cos, sin, sqrt, pi
+import math
 
 # Resize images
 def rescaleFrame(frame, scale=0.75):
@@ -39,7 +39,7 @@ def unwarp(img, src, dst, testing):
     # use cv2.warpPerspective() to warp your image to a top-down view
     warped = cv.warpPerspective(img, M, (w, h), flags=cv2.INTER_LINEAR)
 
-def watershed(img, mask, filename): # add parameters for tweaking
+def watershed(img, mask): # add parameters for tweaking
     # noise removal
     kernel = np.ones((3,3),np.uint8)
     opening = cv.morphologyEx(mask,cv.MORPH_OPEN,kernel, iterations = 5) # default iterations = 5
@@ -55,14 +55,7 @@ def watershed(img, mask, filename): # add parameters for tweaking
     # Finding sure foreground area
     dist_transform = cv.distanceTransform(opening,cv.DIST_L2,5)
     ret, sure_fg = cv.threshold(dist_transform,0.4*dist_transform.max(),255,0) # default parameter = 0.7 (used 0.4)
-    # cv.imshow('distance transform', dist_transform)
-    # cv.imshow('sure_fg', sure_fg)
-
-    sure_fg_plt = cv.cvtColor(sure_fg, cv.COLOR_BGR2RGB)
-    plt.subplot(1, 3, 2)
-    plt.imshow(sure_fg_plt)
-    cv.imwrite(os.path.splitext(filename)[0] + "_foreground.jpg", sure_fg)
-
+  
     # Finding unknown region
     sure_fg = np.uint8(sure_fg)
     unknown = cv.subtract(sure_bg,sure_fg)
@@ -80,11 +73,6 @@ def watershed(img, mask, filename): # add parameters for tweaking
     markers = markers.astype(np.uint8)
 
     img[markers == -1] = [255,0,0]
-
-    img_plt = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-    plt.subplot(1, 3, 3)
-    plt.imshow(img_plt)
-    plt.show()
 
     return markers
 
@@ -155,21 +143,21 @@ def drawAxis(img, p_, q_, color, scale):
   q = list(q_)
  
   ## [visualization1]
-  angle = atan2(p[1] - q[1], p[0] - q[0]) # angle in radians
-  hypotenuse = sqrt((p[1] - q[1]) * (p[1] - q[1]) + (p[0] - q[0]) * (p[0] - q[0]))
+  angle = math.atan2(p[1] - q[1], p[0] - q[0]) # angle in radians
+  hypotenuse = math.sqrt((p[1] - q[1]) * (p[1] - q[1]) + (p[0] - q[0]) * (p[0] - q[0]))
  
   # Here we lengthen the arrow by a factor of scale
-  q[0] = p[0] - scale * hypotenuse * cos(angle)
-  q[1] = p[1] - scale * hypotenuse * sin(angle)
+  q[0] = p[0] - scale * hypotenuse * math.cos(angle)
+  q[1] = p[1] - scale * hypotenuse * math.sin(angle)
   cv.line(img, (int(p[0]), int(p[1])), (int(q[0]), int(q[1])), color, 3, cv.LINE_AA)
  
   # create the arrow hooks
-  p[0] = q[0] + 9 * cos(angle + pi / 4)
-  p[1] = q[1] + 9 * sin(angle + pi / 4)
+  p[0] = q[0] + 9 * math.cos(angle + math.pi / 4)
+  p[1] = q[1] + 9 * math.sin(angle + math.pi / 4)
   cv.line(img, (int(p[0]), int(p[1])), (int(q[0]), int(q[1])), color, 3, cv.LINE_AA)
  
-  p[0] = q[0] + 9 * cos(angle - pi / 4)
-  p[1] = q[1] + 9 * sin(angle - pi / 4)
+  p[0] = q[0] + 9 * math.cos(angle - math.pi / 4)
+  p[1] = q[1] + 9 * math.sin(angle - math.pi / 4)
   cv.line(img, (int(p[0]), int(p[1])), (int(q[0]), int(q[1])), color, 3, cv.LINE_AA)
   ## [visualization1]
  
@@ -198,7 +186,7 @@ def getOrientation(pts, img):
 #   drawAxis(img, cntr, p1, (255, 255, 0), 1)
 #   drawAxis(img, cntr, p2, (0, 0, 255), 5)
  
-  angle = atan2(eigenvectors[0,1], eigenvectors[0,0]) # orientation in radians
+  angle = math.atan2(eigenvectors[0,1], eigenvectors[0,0]) # orientation in radians
 #   angle = -int(np.rad2deg(angle)) - 90
   ## [visualization]
  
@@ -208,3 +196,16 @@ def getOrientation(pts, img):
 #   cv.putText(img, label, (cntr[0], cntr[1]), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 1, cv.LINE_AA)
  
   return angle
+
+def draw_hough_lines(lines, idx1, idx2, line_image, pixel_per_voxel):
+  for i in range(len(lines)):
+    x1, y1, x2, y2 = lines[i]
+    # Filter out lines not spaced enough apart for voxels
+    if (i < len(lines)-1):
+        next = i+1      
+        while ((lines[next][idx1]-lines[i][idx1] == 0) and (lines[next][idx2]-lines[i][idx2] == 0)):
+            next = next + 1
+        if math.isclose(lines[next][idx1]-lines[i][idx1], pixel_per_voxel, abs_tol=10):
+            cv.line(line_image,(x1,y1),(x2,y2),(255,0,0),2)
+    else:
+        cv.line(line_image,(x1,y1),(x2,y2),(255,0,0),2)

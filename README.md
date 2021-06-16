@@ -2,12 +2,12 @@
 Computer vision script for detecting voxel pickups in gripper
 
 To dos:
-- detect checkerboard pixels
-- detect voxels
-- translate into numpy array
-- do perspective correction
+V- detect checkerboard pixels
+V- detect voxels
+V- translate into numpy array
+V- do perspective correction
 - correct for voxel shading
-- draw lines across image
+V- draw lines across image
 - fix orientation offset
 - expand code to take multiple images and calculate array voxel average accuracy
 
@@ -46,8 +46,17 @@ References:
 - https://learnopencv.com/camera-calibration-using-opencv/
 - https://learnopencv.com/understanding-lens-distortion/ 
 - https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_calib3d/py_calibration/py_calibration.html
+5. Hough line transform
+- https://stackoverflow.com/questions/45322630/how-to-detect-lines-in-opencv
+- https://stackoverflow.com/questions/45531074/how-to-merge-lines-after-houghlinesp
+- https://stackoverflow.com/questions/40638778/convert-houghlinesp-output-line-format-to-houghlines-output-line-format
+- https://stackoverflow.com/questions/36452491/opencv-python-houghlinesp-strange-results
 
 Hough Line Transform Tips:
-- grow and shrink the blobs with thresholding
+- grow and shrink the blobs with thresholding (watershed)
+- separate image based on color range (gold, purple, black holes)
+https://learnopencv.com/filling-holes-in-an-image-using-opencv-python-c/
+https://docs.opencv.org/master/d3/db4/tutorial_py_watershed.html
+https://www.tutorialspoint.com/line-detection-in-python-with-opencv
 - use math.isclose() for filtering vertical and horizontal lines
 - how many lines to plot and how far they are spaced apart

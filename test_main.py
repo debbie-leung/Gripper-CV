@@ -50,7 +50,7 @@ upper = upper_mag
 
 # Prepare the mask to overlay 
 mask = cv.inRange(hsv, lower, upper) 
-markers = f.watershed(img, mask, filename)
+markers = f.watershed(img, mask)
 ret, m2 = cv.threshold(markers, 0, 255, cv.THRESH_BINARY|cv.THRESH_OTSU)
 contours, hierarchy = cv.findContours(m2, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
 
