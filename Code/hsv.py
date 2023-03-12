@@ -2,6 +2,7 @@
 
 import cv2
 import numpy as np
+import imutils
 
 image_hsv = None   # global ;(
 pixel = (20,60,80) # some stupid default
@@ -24,6 +25,7 @@ def main():
     global image_hsv, pixel # so we can use it in mouse callback
 
     image_src = cv2.imread(sys.argv[1])  # pick.py my.png
+    image_src = imutils.resize(image_src, width=400)
     if image_src is None:
         print ("the image read is None............")
         return

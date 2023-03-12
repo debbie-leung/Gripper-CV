@@ -16,13 +16,23 @@ filename = sys.argv[1]
 img = cv.imread(filename)
 img = imutils.resize(img, width=700)
 img2 = img.copy()
-gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+hsv = cv.cvtColor(img, cv.COLOR_BGR2HSV) 
+# gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 
-blurred = cv.GaussianBlur(gray, (5, 5), 0)
-thresh = cv.threshold(blurred, 100, 255, cv.THRESH_BINARY)[1]
+# Filter gripped by using purple HSV values
+lower_purple = np.array([110,100,100])
+upper_purple = np.array([130,255,255]) # 130,255,255
+lower_green = np.array([40,16,200])
+upper_green = np.array([65,190,290])
+
+# Prepare the mask to overlay 
+mask = cv.inRange(hsv, lower_green, upper_green) 
+# blurred = cv.GaussianBlur(gray, (5, 5), 0)
+# thresh = cv.threshold(blurred, 100, 255, cv.THRESH_BINARY)[1]
+cv.imshow("mask", mask)
 
 # Find contours of the gripper in the thresholded image
-cnts, x, y, w, h, contours_poly, box = f.largest_4_sided_contour(thresh)
+cnts, x, y, w, h, contours_poly, box = f.largest_4_sided_contour(mask)
 cv.drawContours(img2, [cnts], -1, (0,255,0), 2)
 
 # Change DST list points to SQUARE (take the longer edge)
@@ -70,7 +80,6 @@ cv.imshow("warped", warped)
 # 	cv.CHAIN_APPROX_SIMPLE)
 # cnts = imutils.grab_contours(cnts)
 
-cv.imshow("Image", img)
 cv.imshow("Annotated", img2)
 cv.waitKey()
 print("finished contours")
@@ -161,7 +170,6 @@ if ret == True:
     img = cv.drawChessboardCorners(img, (nline, ncol), corners2, ret)
     cv.imshow('img',img)
     cv.waitKey()
-
 
 # Convert image to grayscale and median blur to smooth image
 blur = cv.medianBlur(gray, 5)

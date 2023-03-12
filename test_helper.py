@@ -19,7 +19,7 @@ def rescaleFrame(frame, scale=0.75):
 def largest_4_sided_contour(processed, show_contours=False):
     contours, _ = cv.findContours(
         processed, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE) # check cv.RETR_EXTERNAL
-    contours = sorted(contours, key=cv.contourArea, reverse=True)
+    contours = sorted(contours, key=cv.contourArea, reverse=False)
     font = cv.FONT_HERSHEY_COMPLEX 
     for cnt in contours[:min(3, len(contours))]:
         peri = cv.arcLength(cnt, True)
